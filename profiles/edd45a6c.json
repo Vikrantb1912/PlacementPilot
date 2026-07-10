@@ -1,0 +1,25 @@
+{
+  "name": "Vikrant Bendre",
+  "email": "vickybendre1@gmail.com",
+  "branch": "CSE",
+  "year": "3rd Year",
+  "college": "MIT AOE",
+  "cgpa": "7.52",
+  "skill_level": "Beginner",
+  "skills": [
+    "C++",
+    "SQL",
+    "MongoDB"
+  ],
+  "career_goal": "Software Development",
+  "timeline": "6 months",
+  "target_companies": [
+    "Google",
+    "Microsoft",
+    "Amazon",
+    "TCS",
+    "Infosys"
+  ],
+  "focus_note": "",
+  "profile_id": "edd45a6c"
+}

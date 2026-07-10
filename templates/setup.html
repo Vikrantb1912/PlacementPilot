@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block title %}Setup Profile — PlacementPilot AI{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width:760px">
+  <div class="text-center mb-5">
+    <div class="setup-icon"><i class="bi bi-person-gear"></i></div>
+    <h2 class="fw-bold mt-3">Create Your Placement Profile</h2>
+    <p class="text-muted">Tell us about yourself so we can personalize your preparation plan.</p>
+  </div>
+
+  <!-- Existing profiles -->
+  {% if existing_profiles %}
+  <div class="pp-card mb-4">
+    <div class="pp-card-header"><i class="bi bi-people"></i> Existing Profiles</div>
+    <div class="pp-card-body">
+      <div class="row g-2">
+        {% for p in existing_profiles %}
+        <div class="col-sm-6">
+          <div class="profile-card-mini">
+            <div class="profile-avatar-sm">{{ p.name[0].upper() }}</div>
+            <div class="flex-grow-1">
+              <div class="fw-semibold small">{{ p.name }}</div>
+              <div class="text-muted" style="font-size:0.75rem">{{ p.branch }} · {{ p.year }} · {{ p.skill_level }}</div>
+            </div>
+            <div class="d-flex gap-1">
+              <a href="{{ url_for('switch_profile', profile_id=p.profile_id) }}"
+                 class="btn btn-xs btn-outline-primary">Use</a>
+              <form action="{{ url_for('delete_profile', profile_id=p.profile_id) }}" method="POST" class="d-inline">
+                <button type="submit" class="btn btn-xs btn-outline-danger"
+                        onclick="return confirm('Delete profile {{ p.name }}?')">✕</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Setup Form -->
+  <div class="pp-card">
+    <div class="pp-card-header"><i class="bi bi-person-plus"></i> New Profile</div>
+    <div class="pp-card-body">
+      <form method="POST" action="{{ url_for('setup') }}" id="setupForm">
+
+        <!-- Step 1: Basic Info -->
+        <div class="setup-section">
+          <h6 class="setup-section-title"><span class="step-badge">1</span> Basic Information</h6>
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <label class="form-label">Full Name *</label>
+              <input type="text" name="name" class="form-control pp-input" required placeholder="Your full name"/>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Email</label>
+              <input type="email" name="email" class="form-control pp-input" placeholder="your@email.com"/>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Branch / Department *</label>
+              <select name="branch" class="form-select pp-input" required>
+                <option value="">Select Branch</option>
+                {% for d in domains %}
+                <option value="{{ d }}">{{ d }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Year of Study *</label>
+              <select name="year" class="form-select pp-input" required>
+                <option value="">Select Year</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+                <option value="Final Year">Final Year (Placement Year)</option>
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">College / University</label>
+              <input type="text" name="college" class="form-control pp-input" placeholder="Your college name"/>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">CGPA</label>
+              <input type="number" name="cgpa" class="form-control pp-input" step="0.01" min="0" max="10" placeholder="e.g. 8.5"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Skills & Level -->
+        <div class="setup-section">
+          <h6 class="setup-section-title"><span class="step-badge">2</span> Skills & Level</h6>
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Current Skill Level *</label>
+              <div class="skill-level-selector">
+                {% for level in ["Beginner","Intermediate","Advanced"] %}
+                <label class="skill-level-option">
+                  <input type="radio" name="skill_level" value="{{ level }}" required>
+                  <div class="skill-level-card">
+                    <i class="bi bi-{% if level == 'Beginner' %}seedling{% elif level == 'Intermediate' %}tree{% else %}rocket-takeoff{% endif %}"></i>
+                    <span>{{ level }}</span>
+                    <small>{% if level == 'Beginner' %}Learning basics{% elif level == 'Intermediate' %}Know fundamentals{% else %}Competitive level{% endif %}</small>
+                  </div>
+                </label>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Technical Skills (select all that apply)</label>
+              <div class="checkbox-grid">
+                {% for skill in ["Python","Java","C++","JavaScript","React","Node.js","SQL","MongoDB","Git","Docker","AWS","Machine Learning","Data Science","Android","iOS"] %}
+                <label class="checkbox-chip">
+                  <input type="checkbox" name="skills" value="{{ skill }}"/>
+                  <span>{{ skill }}</span>
+                </label>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Career Goals -->
+        <div class="setup-section">
+          <h6 class="setup-section-title"><span class="step-badge">3</span> Career Goals</h6>
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <label class="form-label">Career Goal *</label>
+              <select name="career_goal" class="form-select pp-input" required>
+                <option value="">Select Goal</option>
+                <option value="Software Development">Software Development (SDE)</option>
+                <option value="Data Science / ML">Data Science / Machine Learning</option>
+                <option value="Frontend Development">Frontend / UI Development</option>
+                <option value="Backend Development">Backend Development</option>
+                <option value="Full Stack Development">Full Stack Development</option>
+                <option value="DevOps / Cloud">DevOps / Cloud Engineering</option>
+                <option value="Cybersecurity">Cybersecurity</option>
+                <option value="Embedded / Hardware">Embedded / Hardware Engineering</option>
+                <option value="Product Management">Product Management</option>
+                <option value="Consulting / IT Services">Consulting / IT Services</option>
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Placement Timeline</label>
+              <select name="timeline" class="form-select pp-input">
+                <option value="3 months">3 months</option>
+                <option value="6 months" selected>6 months</option>
+                <option value="9 months">9 months</option>
+                <option value="12 months">12 months</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Target Companies (select up to 5)</label>
+              <div class="checkbox-grid">
+                {% for company in companies %}
+                <label class="checkbox-chip">
+                  <input type="checkbox" name="target_companies" value="{{ company }}" />
+                  <span>{{ company }}</span>
+                </label>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Anything specific you want to focus on?</label>
+              <textarea name="focus_note" class="form-control pp-input" rows="2"
+                        placeholder="e.g. I want to crack Google SWE internship in 6 months..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn pp-btn-primary w-100 mt-2">
+          <i class="bi bi-rocket-takeoff-fill"></i> Create My Placement Profile
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

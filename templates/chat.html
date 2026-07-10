@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}AI Chat — PlacementPilot{% endblock %}
+
+{% block content %}
+<div class="chat-layout">
+  <!-- ── Sidebar ─────────────────────────────────────────── -->
+  <div class="chat-sidebar" id="chatSidebar">
+    <div class="chat-sidebar-header">
+      <i class="bi bi-mortarboard-fill me-2"></i>
+      <span>PlacementPilot AI</span>
+    </div>
+    <div class="chat-sidebar-body">
+      <p class="sidebar-label">Quick Topics</p>
+      {% set topics = [
+        ("general","bi-chat-dots","General Chat"),
+        ("dsa","bi-code-slash","DSA & Algorithms"),
+        ("roadmap","bi-map","Placement Roadmap"),
+        ("resume","bi-file-earmark-person","Resume Review"),
+        ("interview","bi-patch-question","Mock Interview"),
+        ("hr","bi-person-check","HR Preparation"),
+        ("aptitude","bi-calculator","Aptitude Practice"),
+        ("company","bi-buildings","Company Guide"),
+        ("projects","bi-code-square","Project Ideas"),
+      ] %}
+      {% for module, icon, label in topics %}
+      <button class="sidebar-topic-btn {% if module == 'general' %}active{% endif %}"
+              data-module="{{ module }}" onclick="setModule('{{ module }}', this)">
+        <i class="bi {{ icon }}"></i> {{ label }}
+      </button>
+      {% endfor %}
+
+      <div class="sidebar-divider"></div>
+      <p class="sidebar-label">Profile</p>
+      <div class="sidebar-profile-card">
+        <div class="sp-name">{{ profile.name }}</div>
+        <div class="sp-meta">{{ profile.branch }} · {{ profile.year }}</div>
+        <div class="sp-targets">
+          {% for c in profile.target_companies[:3] %}
+          <span class="sp-company">{{ c }}</span>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="sidebar-divider"></div>
+      <button class="sidebar-action-btn text-danger" onclick="clearChat()">
+        <i class="bi bi-trash3"></i> Clear Chat
+      </button>
+      <a href="{{ url_for('dashboard') }}" class="sidebar-action-btn">
+        <i class="bi bi-speedometer2"></i> Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- ── Chat Main ──────────────────────────────────────── -->
+  <div class="chat-main">
+    <!-- Header -->
+    <div class="chat-header">
+      <button class="btn btn-icon d-lg-none me-2" id="sidebarToggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+      </button>
+      <div class="chat-header-info">
+        <div class="chat-avatar-sm"><i class="bi bi-mortarboard-fill"></i></div>
+        <div>
+          <div class="fw-semibold">PlacementPilot AI</div>
+          <div class="chat-status"><span class="status-dot"></span> Powered by IBM Granite</div>
+        </div>
+      </div>
+      <div class="ms-auto d-flex gap-2">
+        <span class="badge bg-primary-subtle text-primary" id="currentModuleBadge">General Chat</span>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="chat-messages" id="chatMessages">
+      {% if not history %}
+      <div class="chat-welcome">
+        <div class="welcome-icon"><i class="bi bi-mortarboard-fill"></i></div>
+        <h5 class="fw-bold mt-3">Hello, {{ profile.name }}! 👋</h5>
+        <p class="text-muted">I'm your AI placement advisor powered by <strong>IBM Granite</strong>. Ask me anything about:</p>
+        <div class="welcome-chips">
+          {% set suggestions = [
+            "📊 Generate my placement roadmap",
+            "💡 DSA topics I should focus on",
+            "🏢 How to prepare for " + (profile.target_companies[0] if profile.target_companies else "Google"),
+            "📝 Review my resume",
+            "🤔 Ask me a technical question",
+            "🎯 What projects should I build?",
+          ] %}
+          {% for sug in suggestions %}
+          <button class="welcome-chip" onclick="sendSuggestion(this)">{{ sug }}</button>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      {% for msg in history %}
+      <div class="message-row {{ 'user-row' if msg.role == 'user' else 'bot-row' }}">
+        {% if msg.role == 'assistant' %}
+        <div class="msg-avatar bot-avatar"><i class="bi bi-mortarboard-fill"></i></div>
+        {% endif %}
+        <div class="message-bubble {{ 'user-bubble' if msg.role == 'user' else 'bot-bubble' }}">
+          <div class="msg-content">{{ msg.content }}</div>
+          <div class="msg-time">{{ msg.timestamp }}</div>
+        </div>
+        {% if msg.role == 'user' %}
+        <div class="msg-avatar user-avatar"><i class="bi bi-person-fill"></i></div>
+        {% endif %}
+      </div>
+      {% endfor %}
+      {% endif %}
+
+      <!-- Typing indicator (hidden by default) -->
+      <div class="message-row bot-row d-none" id="typingIndicator">
+        <div class="msg-avatar bot-avatar"><i class="bi bi-mortarboard-fill"></i></div>
+        <div class="message-bubble bot-bubble typing-bubble">
+          <span class="typing-dot"></span>
+          <span class="typing-dot"></span>
+          <span class="typing-dot"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input -->
+    <div class="chat-input-area">
+      <div class="chat-input-wrapper">
+        <textarea class="chat-input" id="chatInput" rows="1"
+                  placeholder="Ask about DSA, interviews, resume, company prep..."
+                  onkeydown="handleKey(event)"
+                  oninput="autoResize(this)"></textarea>
+        <button class="chat-send-btn" id="sendBtn" onclick="sendMessage()">
+          <i class="bi bi-send-fill"></i>
+        </button>
+      </div>
+      <div class="chat-input-footer">
+        <span class="text-muted" style="font-size:0.72rem">
+          <i class="bi bi-shield-check"></i> Powered by IBM Granite · IBM watsonx.ai
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %}

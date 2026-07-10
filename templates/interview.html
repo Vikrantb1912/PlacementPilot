@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block title %}Mock Interview — PlacementPilot AI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="page-header mb-4">
+    <h4 class="fw-bold"><i class="bi bi-patch-question text-primary me-2"></i>Mock Interview Simulator</h4>
+    <p class="text-muted">Simulated technical, HR, and system design interviews with ideal answers.</p>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="pp-card sticky-config">
+        <div class="pp-card-header"><i class="bi bi-sliders"></i> Interview Settings</div>
+        <div class="pp-card-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Interview Type</label>
+            <div class="interview-type-selector">
+              {% for itype, icon, label in [
+                ("technical","bi-code-slash","Technical / Coding"),
+                ("system_design","bi-diagram-3","System Design"),
+                ("hr","bi-person-check","HR / Behavioral"),
+                ("aptitude","bi-calculator","Aptitude Round"),
+              ] %}
+              <label class="interview-type-option">
+                <input type="radio" name="interviewType" value="{{ itype }}" {% if itype == 'technical' %}checked{% endif %}/>
+                <div class="interview-type-card">
+                  <i class="bi {{ icon }}"></i>
+                  <span>{{ label }}</span>
+                </div>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Target Company (optional)</label>
+            <select id="interviewCompany" class="form-select pp-input">
+              <option value="">Any Company</option>
+              {% for company in companies %}
+              <option value="{{ company }}">{{ company }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3" id="topicGroup">
+            <label class="form-label fw-semibold small">DSA Topic</label>
+            <select id="interviewTopic" class="form-select pp-input">
+              <option value="">Random Topic</option>
+              {% for topic in ["Arrays","Strings","Linked Lists","Trees","Graphs","Dynamic Programming","Greedy","Backtracking","Binary Search","Sorting","Stacks & Queues","Hash Maps"] %}
+              <option value="{{ topic }}">{{ topic }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button class="btn pp-btn-primary w-100" onclick="generateInterview()">
+            <i class="bi bi-play-fill"></i> Start Mock Interview
+          </button>
+          <a href="{{ url_for('chat_page') }}?module=interview" class="btn btn-outline-secondary w-100 mt-2">
+            <i class="bi bi-chat-dots"></i> Interactive Interview Chat
+          </a>
+        </div>
+      </div>
+
+      <!-- Interview Tips -->
+      <div class="pp-card mt-3">
+        <div class="pp-card-header"><i class="bi bi-lightbulb"></i> Interview Tips</div>
+        <div class="pp-card-body">
+          {% for tip in [
+            "Think aloud — narrate your thought process",
+            "Clarify the problem before coding",
+            "Start with brute force, then optimize",
+            "Analyze time & space complexity always",
+            "Test with edge cases (null, empty, large)",
+            "Use STAR framework for behavioral questions",
+            "Ask questions at the end of each round",
+          ] %}
+          <div class="tip-item"><i class="bi bi-check-circle text-success me-2"></i>{{ tip }}</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-8">
+      <!-- Session Progress -->
+      <div class="interview-session-banner mb-3" id="sessionBanner" style="display:none">
+        <i class="bi bi-record-circle-fill text-danger me-2 blink"></i>
+        <span>Mock Interview Session Active</span>
+        <span class="ms-auto" id="sessionTimer">00:00</span>
+      </div>
+
+      <!-- Questions Output -->
+      <div class="pp-card" id="interviewCard" style="display:none">
+        <div class="pp-card-header d-flex justify-content-between align-items-center">
+          <span><i class="bi bi-stars text-warning"></i> Interview Questions</span>
+          <div class="d-flex gap-2">
+            <button class="btn btn-xs btn-outline-success" onclick="generateInterview()">
+              <i class="bi bi-arrow-clockwise"></i> New Set
+            </button>
+            <button class="btn btn-xs btn-outline-secondary" onclick="copyResult('interviewResult')">
+              <i class="bi bi-clipboard"></i> Copy
+            </button>
+          </div>
+        </div>
+        <div class="pp-card-body">
+          <div id="interviewResult" class="ai-result-content"></div>
+        </div>
+      </div>
+
+      <!-- HR Question Bank (always visible) -->
+      <div class="pp-card mt-4">
+        <div class="pp-card-header"><i class="bi bi-person-badge"></i> Must-Know HR Questions</div>
+        <div class="pp-card-body">
+          <div class="accordion pp-accordion" id="hrAccordion">
+            {% set hr_qs = [
+              ("Tell me about yourself", "Structure: 30-second pitch → Education → Key skills → Achievement → Why this company"),
+              ("What are your strengths?", "Mention 2-3 role-relevant strengths with examples. Use STAR format."),
+              ("What are your weaknesses?", "Show self-awareness + growth. Never say 'perfectionist' — give a real weakness and how you're improving."),
+              ("Why do you want to join our company?", "Research the company → Mention culture, tech stack, growth opportunities, specific projects/products."),
+              ("Where do you see yourself in 5 years?", "Show ambition aligned with the role. Mention skill growth and leadership goals."),
+              ("Tell me about a failure / conflict", "Use STAR. Show what you learned. Emphasize growth and resilience."),
+            ] %}
+            {% for q, hint in hr_qs %}
+            <div class="accordion-item pp-accordion-item">
+              <h6 class="accordion-header">
+                <button class="accordion-button collapsed pp-accordion-btn" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#hr{{ loop.index }}">
+                  {{ q }}
+                </button>
+              </h6>
+              <div id="hr{{ loop.index }}" class="accordion-collapse collapse" data-bs-parent="#hrAccordion">
+                <div class="accordion-body small text-muted">{{ hint }}</div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let timerInterval, seconds = 0;
+
+async function generateInterview() {
+  const type = document.querySelector('input[name="interviewType"]:checked').value;
+  const company = document.getElementById("interviewCompany").value;
+  const topic = document.getElementById("interviewTopic").value;
+  document.getElementById("interviewCard").style.display = "block";
+  document.getElementById("sessionBanner").style.display = "flex";
+  showAILoading("interviewResult", "Preparing your interview session...");
+  startTimer();
+  try {
+    const res = await fetch("/api/mock-interview", {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ type, company, topic })
+    });
+    const data = await res.json();
+    renderMarkdown("interviewResult", data.result || data.error);
+  } catch(e) { renderMarkdown("interviewResult", "Error generating interview."); }
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  seconds = 0;
+  timerInterval = setInterval(() => {
+    seconds++;
+    const m = String(Math.floor(seconds/60)).padStart(2,"0");
+    const s = String(seconds%60).padStart(2,"0");
+    document.getElementById("sessionTimer").textContent = `${m}:${s}`;
+  }, 1000);
+}
+
+// Show/hide topic selector based on interview type
+document.querySelectorAll('input[name="interviewType"]').forEach(radio => {
+  radio.addEventListener("change", function() {
+    document.getElementById("topicGroup").style.display =
+      (this.value === "technical") ? "block" : "none";
+  });
+});
+</script>
+{% endblock %}

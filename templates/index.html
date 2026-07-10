@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% block title %}PlacementPilot AI — Campus Placement Powered by IBM Granite{% endblock %}
+
+{% block content %}
+<!-- ── Hero Section ───────────────────────────────────────── -->
+<section class="pp-hero">
+  <div class="hero-bg-shapes"></div>
+  <div class="container py-5">
+    <div class="row align-items-center min-vh-75">
+      <div class="col-lg-6 text-center text-lg-start" data-aos="fade-right">
+        <div class="hero-badge mb-3">
+          <span class="badge-inner">
+            <i class="bi bi-stars"></i> IBM Granite · IBM watsonx.ai
+          </span>
+        </div>
+        <h1 class="hero-title">
+          Your AI-Powered<br/>
+          <span class="gradient-text">Placement Partner</span>
+        </h1>
+        <p class="hero-subtitle">
+          Personalized placement preparation with IBM Granite intelligence.
+          Master DSA, ace interviews, build projects, and land your dream job.
+        </p>
+        <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start mt-4">
+          {% if profile and profile.name %}
+          <a href="{{ url_for('dashboard') }}" class="btn pp-btn-primary btn-lg">
+            <i class="bi bi-speedometer2"></i> My Dashboard
+          </a>
+          <a href="{{ url_for('chat_page') }}" class="btn pp-btn-secondary btn-lg">
+            <i class="bi bi-chat-dots-fill"></i> Chat with AI
+          </a>
+          {% else %}
+          <a href="{{ url_for('setup') }}" class="btn pp-btn-primary btn-lg">
+            <i class="bi bi-rocket-takeoff-fill"></i> Get Started Free
+          </a>
+          <a href="#features" class="btn pp-btn-outline btn-lg">
+            <i class="bi bi-play-circle"></i> See Features
+          </a>
+          {% endif %}
+        </div>
+        <div class="hero-stats mt-5">
+          <div class="stat-item"><span class="stat-num">12+</span><span class="stat-label">AI Modules</span></div>
+          <div class="stat-divider"></div>
+          <div class="stat-item"><span class="stat-num">500+</span><span class="stat-label">DSA Topics</span></div>
+          <div class="stat-divider"></div>
+          <div class="stat-item"><span class="stat-num">50+</span><span class="stat-label">Companies</span></div>
+        </div>
+      </div>
+      <div class="col-lg-6 d-flex justify-content-center mt-5 mt-lg-0" data-aos="fade-left">
+        <div class="hero-card-stack">
+          <div class="floating-card card-1">
+            <i class="bi bi-code-slash text-primary"></i>
+            <div>
+              <div class="fw-semibold small">DSA Roadmap</div>
+              <div class="text-muted" style="font-size:0.75rem">Arrays → Graphs → DP</div>
+            </div>
+          </div>
+          <div class="hero-phone-mockup">
+            <div class="mockup-screen">
+              <div class="mockup-header">
+                <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+                <span class="ms-2 small fw-semibold">PlacementPilot AI</span>
+              </div>
+              <div class="mockup-chat">
+                <div class="mock-msg bot">
+                  <div class="mock-avatar"><i class="bi bi-mortarboard-fill"></i></div>
+                  <div class="mock-bubble">Hi! Ready to ace your placement? 🚀</div>
+                </div>
+                <div class="mock-msg user">
+                  <div class="mock-bubble">I'm targeting Google & Microsoft!</div>
+                </div>
+                <div class="mock-msg bot">
+                  <div class="mock-avatar"><i class="bi bi-mortarboard-fill"></i></div>
+                  <div class="mock-bubble">Let's build a 12-week roadmap...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="floating-card card-2">
+            <i class="bi bi-graph-up-arrow text-success"></i>
+            <div>
+              <div class="fw-semibold small">Readiness Score</div>
+              <div class="text-success" style="font-size:0.75rem">78% · Excellent!</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Features Section ───────────────────────────────────── -->
+<section id="features" class="pp-section py-6">
+  <div class="container">
+    <div class="section-header text-center mb-5" data-aos="fade-up">
+      <span class="section-badge">What's Inside</span>
+      <h2 class="section-title">Everything You Need to Get Placed</h2>
+      <p class="section-subtitle">12 AI-powered modules covering every aspect of placement preparation</p>
+    </div>
+    <div class="row g-4">
+      {% set features = [
+        ("bi-speedometer2","gradient-blue","Placement Dashboard","Track your readiness score, progress, strengths, and weaknesses with beautiful charts."),
+        ("bi-chat-dots-fill","gradient-purple","AI Chat Assistant","24/7 personalized guidance from IBM Granite — ask anything about placements, DSA, or careers."),
+        ("bi-map-fill","gradient-teal","Roadmap Planner","Get a week-by-week personalized preparation plan based on your target companies and timeline."),
+        ("bi-file-earmark-person-fill","gradient-orange","Resume Analyzer","AI-powered resume review with ATS score, improvement suggestions, and action verb upgrades."),
+        ("bi-patch-question-fill","gradient-pink","Mock Interviews","Simulated technical, HR, and system design interviews with ideal answers and feedback."),
+        ("bi-calculator-fill","gradient-indigo","Aptitude Practice","Quantitative, logical, and verbal aptitude questions tailored to your target companies."),
+        ("bi-buildings-fill","gradient-cyan","Company Guide","Company-specific interview strategies, culture, rounds, and preparation tips."),
+        ("bi-code-square","gradient-lime","Project Ideas","Curated project recommendations that will make your resume stand out to recruiters."),
+        ("bi-award-fill","gradient-rose","Certifications","Recommended certifications from IBM, Google, AWS, Microsoft for your career goal."),
+        ("bi-diagram-3-fill","gradient-amber","DSA Planner","Structured Data Structures & Algorithms study plan from beginner to advanced."),
+        ("bi-person-check-fill","gradient-emerald","Profile Management","Multiple student profiles — switch between them to get role-specific recommendations."),
+        ("bi-mortarboard-fill","gradient-violet","HR Preparation","Master behavioral interviews with STAR framework stories and company culture fit tips."),
+      ] %}
+      {% for icon, gradient, title, desc in features %}
+      <div class="col-sm-6 col-lg-4 col-xl-3" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 50 }}">
+        <div class="feature-card h-100">
+          <div class="feature-icon {{ gradient }}">
+            <i class="bi {{ icon }}"></i>
+          </div>
+          <h5 class="feature-title">{{ title }}</h5>
+          <p class="feature-desc">{{ desc }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ── IBM Tech Section ───────────────────────────────────── -->
+<section class="pp-section-alt py-5">
+  <div class="container">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-5" data-aos="fade-right">
+        <span class="section-badge">Powered By</span>
+        <h2 class="section-title mt-2">IBM Granite Intelligence</h2>
+        <p class="text-muted mb-4">
+          PlacementPilot AI uses IBM's state-of-the-art <strong>Granite</strong> language models
+          through <strong>IBM watsonx.ai</strong> to deliver intelligent, personalized placement
+          guidance that adapts to each student's unique profile and goals.
+        </p>
+        <div class="ibm-feature-list">
+          <div class="ibm-feature-item"><i class="bi bi-check-circle-fill text-primary"></i> IBM Granite 3.3 8B Instruct model</div>
+          <div class="ibm-feature-item"><i class="bi bi-check-circle-fill text-primary"></i> watsonx.ai enterprise-grade API</div>
+          <div class="ibm-feature-item"><i class="bi bi-check-circle-fill text-primary"></i> Secure IBM Cloud API Key integration</div>
+          <div class="ibm-feature-item"><i class="bi bi-check-circle-fill text-primary"></i> Responsible AI with safety guardrails</div>
+          <div class="ibm-feature-item"><i class="bi bi-check-circle-fill text-primary"></i> Customizable agent instructions</div>
+        </div>
+      </div>
+      <div class="col-lg-7" data-aos="fade-left">
+        <div class="ibm-tech-grid">
+          <div class="ibm-tech-card primary">
+            <div class="ibm-tech-icon"><i class="bi bi-cpu-fill"></i></div>
+            <div class="ibm-tech-name">IBM Granite 3.3</div>
+            <div class="ibm-tech-sub">Foundation Model</div>
+          </div>
+          <div class="ibm-tech-card">
+            <div class="ibm-tech-icon"><i class="bi bi-cloud-fill"></i></div>
+            <div class="ibm-tech-name">watsonx.ai</div>
+            <div class="ibm-tech-sub">AI Platform</div>
+          </div>
+          <div class="ibm-tech-card">
+            <div class="ibm-tech-icon"><i class="bi bi-shield-check"></i></div>
+            <div class="ibm-tech-name">IBM Cloud</div>
+            <div class="ibm-tech-sub">Secure Hosting</div>
+          </div>
+          <div class="ibm-tech-card">
+            <div class="ibm-tech-icon"><i class="bi bi-lightning-fill"></i></div>
+            <div class="ibm-tech-name">Flask API</div>
+            <div class="ibm-tech-sub">Python Backend</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA Section ────────────────────────────────────────── -->
+<section class="pp-cta py-6">
+  <div class="container text-center" data-aos="zoom-in">
+    <h2 class="cta-title">Ready to Crack Your Dream Company?</h2>
+    <p class="cta-subtitle">Join thousands of students using PlacementPilot AI to prepare smarter.</p>
+    <a href="{{ url_for('setup') }}" class="btn pp-btn-primary btn-lg mt-3">
+      <i class="bi bi-rocket-takeoff-fill"></i> Start Your Journey
+    </a>
+  </div>
+</section>
+{% endblock %}

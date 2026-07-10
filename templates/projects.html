@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Project Ideas — PlacementPilot AI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="page-header mb-4">
+    <h4 class="fw-bold"><i class="bi bi-code-square text-primary me-2"></i>Project Recommendation Engine</h4>
+    <p class="text-muted">AI-curated project ideas that will make your portfolio stand out to recruiters.</p>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="pp-card sticky-config">
+        <div class="pp-card-header"><i class="bi bi-sliders"></i> Recommendation Settings</div>
+        <div class="pp-card-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Focus Area</label>
+            <select id="projectFocus" class="form-select pp-input">
+              <option value="">Based on my profile</option>
+              <option value="web development">Web Development</option>
+              <option value="machine learning">Machine Learning / AI</option>
+              <option value="mobile development">Mobile Development</option>
+              <option value="data science">Data Science</option>
+              <option value="devops cloud">DevOps / Cloud</option>
+              <option value="system design">System Design projects</option>
+              <option value="open source">Open Source Contribution</option>
+              <option value="competitive programming">Competitive Programming tools</option>
+            </select>
+          </div>
+          <button class="btn pp-btn-primary w-100" onclick="getProjects()">
+            <i class="bi bi-cpu"></i> Get AI Recommendations
+          </button>
+          <a href="{{ url_for('chat_page') }}?module=projects" class="btn btn-outline-secondary w-100 mt-2">
+            <i class="bi bi-chat-dots"></i> Discuss Project Ideas
+          </a>
+        </div>
+      </div>
+
+      <!-- Project Tips -->
+      <div class="pp-card mt-3">
+        <div class="pp-card-header"><i class="bi bi-lightbulb"></i> Portfolio Tips</div>
+        <div class="pp-card-body">
+          {% for tip in [
+            "Host all projects on GitHub with good README files",
+            "Deploy at least 2 projects live (Vercel, Railway, Render)",
+            "Add quantified impact: 'reduced load time by 40%'",
+            "Include tech stack badges and screenshots in README",
+            "Write a blog post about your most complex project",
+            "Contribute to 1 open source project (adds to GitHub activity)",
+            "Record a 2-min demo video for each project",
+          ] %}
+          <div class="tip-item"><i class="bi bi-check-circle text-success me-2"></i>{{ tip }}</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-8">
+      <!-- AI Project Recommendations -->
+      <div class="pp-card mb-4" id="projectCard" style="display:none">
+        <div class="pp-card-header d-flex justify-content-between">
+          <span><i class="bi bi-stars text-warning"></i> AI Project Recommendations</span>
+          <button class="btn btn-xs btn-outline-secondary" onclick="copyResult('projectResult')">
+            <i class="bi bi-clipboard"></i> Copy
+          </button>
+        </div>
+        <div class="pp-card-body">
+          <div id="projectResult" class="ai-result-content"></div>
+        </div>
+      </div>
+
+      <!-- Static Project Ideas by Category -->
+      <div class="pp-card">
+        <div class="pp-card-header"><i class="bi bi-collection"></i> Project Ideas by Category</div>
+        <div class="pp-card-body">
+          <ul class="nav nav-tabs pp-tabs mb-3" id="projectTabs">
+            {% for cat in ["Web","ML/AI","Mobile","Data","DevOps"] %}
+            <li class="nav-item">
+              <button class="nav-link {% if loop.first %}active{% endif %}"
+                      data-bs-toggle="tab" data-bs-target="#tab{{ cat.replace('/','').replace(' ','') }}">
+                {{ cat }}
+              </button>
+            </li>
+            {% endfor %}
+          </ul>
+          <div class="tab-content">
+            {% set project_categories = {
+              "Web": [
+                ("Full-Stack E-Commerce Platform","React + Node.js + MongoDB + Stripe","Shows complete web dev skills, payment integration"),
+                ("Real-time Collaborative Code Editor","Socket.io + Monaco Editor + Node.js","Unique project — stands out in portfolio"),
+                ("AI-Powered Blog Platform","Next.js + OpenAI API + PostgreSQL","Modern stack + AI integration"),
+                ("Job Portal with ML Recommendations","Django + scikit-learn + React","Relevant, complex, impactful"),
+              ],
+              "MLAI": [
+                ("Resume Screening AI Tool","Python + BERT + FastAPI + React","Highly relevant — shows NLP skills"),
+                ("Fake News Detector","BERT + Flask + Web Scraping","Socially relevant ML project"),
+                ("Stock Price Predictor","LSTM + Streamlit + yfinance","Shows time-series + visualization skills"),
+                ("Image Caption Generator","CNN + LSTM + Flask","Computer vision + NLP combo"),
+              ],
+              "Mobile": [
+                ("Campus Placement App","Flutter + Firebase + REST APIs","Directly relevant to audience"),
+                ("Expense Tracker with AI Insights","React Native + ML + SQLite","Practical + AI integration"),
+                ("AR Campus Tour Guide","ARCore + Unity + Firebase","Innovative standout project"),
+              ],
+              "Data": [
+                ("COVID-19 Data Dashboard","Python + Plotly + Pandas + Dash","Classic but shows strong data skills"),
+                ("IPL Analytics Platform","Python + Tableau + SQL","Cricket data — recruiter-friendly"),
+                ("Customer Churn Analysis","ML + Power BI + PostgreSQL","Business-relevant, interview-friendly"),
+              ],
+              "DevOps": [
+                ("CI/CD Pipeline from Scratch","Jenkins + Docker + Kubernetes + GitHub Actions","Shows DevOps end-to-end"),
+                ("Cloud Cost Optimizer Tool","AWS SDK + Python + Terraform","High-value project for cloud roles"),
+                ("Log Monitoring Dashboard","ELK Stack + Grafana + Docker","Enterprise-grade monitoring project"),
+              ],
+            } %}
+            {% for cat, projects in project_categories.items() %}
+            <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="tab{{ cat }}">
+              <div class="row g-3">
+                {% for name, stack, impact in projects %}
+                <div class="col-sm-6">
+                  <div class="project-idea-card">
+                    <div class="project-idea-name">{{ name }}</div>
+                    <div class="project-idea-stack"><i class="bi bi-stack me-1 text-primary"></i>{{ stack }}</div>
+                    <div class="project-idea-impact small text-muted">
+                      <i class="bi bi-lightning me-1 text-warning"></i>{{ impact }}
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+async function getProjects() {
+  const focus = document.getElementById("projectFocus").value;
+  document.getElementById("projectCard").style.display = "block";
+  showAILoading("projectResult", "Generating personalized project recommendations...");
+  try {
+    const res = await fetch("/api/project-recommendations", {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ focus_area: focus })
+    });
+    const data = await res.json();
+    renderMarkdown("projectResult", data.result || data.error);
+  } catch(e) { renderMarkdown("projectResult", "Error getting recommendations."); }
+}
+</script>
+{% endblock %}

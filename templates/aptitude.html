@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Aptitude Practice — PlacementPilot AI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="page-header mb-4">
+    <h4 class="fw-bold"><i class="bi bi-calculator text-primary me-2"></i>Aptitude Practice</h4>
+    <p class="text-muted">AI-generated quantitative, logical, and verbal questions tailored to your target companies.</p>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="pp-card sticky-config">
+        <div class="pp-card-header"><i class="bi bi-sliders"></i> Quiz Settings</div>
+        <div class="pp-card-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Category</label>
+            <div class="btn-group-vertical w-100 gap-1" id="categoryBtns">
+              {% for cat, icon in [
+                ("quantitative","bi-123"),
+                ("logical","bi-puzzle"),
+                ("verbal","bi-alphabet"),
+                ("data_interpretation","bi-bar-chart"),
+                ("mixed","bi-shuffle"),
+              ] %}
+              <button class="btn btn-outline-primary btn-sm text-start {% if cat == 'quantitative' %}active{% endif %}"
+                      data-category="{{ cat }}" onclick="selectCategory('{{ cat }}', this)">
+                <i class="bi {{ icon }} me-2"></i>{{ cat.replace("_"," ").title() }}
+              </button>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Difficulty</label>
+            <select id="quizDifficulty" class="form-select pp-input">
+              <option value="easy">Easy (TCS, Wipro level)</option>
+              <option value="medium" selected>Medium (Infosys, Accenture)</option>
+              <option value="hard">Hard (Goldman, Flipkart)</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Number of Questions</label>
+            <select id="quizCount" class="form-select pp-input">
+              <option value="5">5 Questions</option>
+              <option value="10" selected>10 Questions</option>
+              <option value="15">15 Questions</option>
+            </select>
+          </div>
+          <button class="btn pp-btn-primary w-100" onclick="generateQuiz()">
+            <i class="bi bi-play-fill"></i> Generate Quiz
+          </button>
+        </div>
+      </div>
+
+      <!-- Topic Coverage -->
+      <div class="pp-card mt-3">
+        <div class="pp-card-header"><i class="bi bi-list-check"></i> Topic Coverage</div>
+        <div class="pp-card-body">
+          <div class="topic-coverage-list">
+            {% for topic in ["Percentages","Profit & Loss","Time & Distance","Time & Work",
+                             "Ratios & Proportions","Averages","Permutations","Probability",
+                             "Number Series","Blood Relations","Syllogisms","Direction Sense",
+                             "Reading Comprehension","Sentence Correction","Vocabulary"] %}
+            <span class="topic-tag">{{ topic }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-8">
+      <!-- Score Banner -->
+      <div class="quiz-score-banner" id="scoreBanner" style="display:none">
+        <div class="score-stat">
+          <div class="score-num" id="scoreCorrect">0</div>
+          <div class="score-lbl">Correct</div>
+        </div>
+        <div class="score-stat">
+          <div class="score-num text-danger" id="scoreWrong">0</div>
+          <div class="score-lbl">Wrong</div>
+        </div>
+        <div class="score-stat">
+          <div class="score-num text-warning" id="scoreTotal">0</div>
+          <div class="score-lbl">Total</div>
+        </div>
+        <div class="score-pct" id="scorePct">0%</div>
+      </div>
+
+      <!-- Quiz Output -->
+      <div class="pp-card" id="quizCard" style="display:none">
+        <div class="pp-card-header d-flex justify-content-between">
+          <span><i class="bi bi-stars text-warning"></i> Practice Questions</span>
+          <div class="d-flex gap-2">
+            <button class="btn btn-xs btn-outline-success" onclick="generateQuiz()">
+              <i class="bi bi-arrow-clockwise"></i> New Quiz
+            </button>
+            <button class="btn btn-xs btn-outline-secondary" onclick="copyResult('quizResult')">
+              <i class="bi bi-clipboard"></i> Copy
+            </button>
+          </div>
+        </div>
+        <div class="pp-card-body">
+          <div id="quizResult" class="ai-result-content"></div>
+        </div>
+      </div>
+
+      <!-- Formula Sheet -->
+      <div class="pp-card mt-4">
+        <div class="pp-card-header"><i class="bi bi-journal-text"></i> Quick Formula Reference</div>
+        <div class="pp-card-body">
+          <div class="row g-3">
+            {% set formulas = [
+              ("Percentage", "% Change = (Diff/Original) × 100"),
+              ("Profit & Loss", "Profit% = (Profit/CP) × 100"),
+              ("Time & Work", "Combined rate = 1/A + 1/B"),
+              ("Speed & Distance", "Speed = Distance / Time"),
+              ("Simple Interest", "SI = (P × R × T) / 100"),
+              ("Compound Interest", "CI = P(1+R/100)^T - P"),
+              ("Permutations", "nPr = n!/(n-r)!"),
+              ("Combinations", "nCr = n!/[r!(n-r)!]"),
+            ] %}
+            {% for name, formula in formulas %}
+            <div class="col-sm-6">
+              <div class="formula-card">
+                <div class="formula-name">{{ name }}</div>
+                <div class="formula-expr">{{ formula }}</div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let currentCategory = "quantitative";
+
+function selectCategory(cat, btn) {
+  currentCategory = cat;
+  document.querySelectorAll("#categoryBtns .btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+}
+
+async function generateQuiz() {
+  const difficulty = document.getElementById("quizDifficulty").value;
+  const count = document.getElementById("quizCount").value;
+  document.getElementById("quizCard").style.display = "block";
+  document.getElementById("scoreBanner").style.display = "none";
+  showAILoading("quizResult", "Generating practice questions...");
+  try {
+    const res = await fetch("/api/aptitude-quiz", {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ category: currentCategory, difficulty, count: parseInt(count) })
+    });
+    const data = await res.json();
+    renderMarkdown("quizResult", data.result || data.error);
+  } catch(e) { renderMarkdown("quizResult", "Error generating quiz."); }
+}
+</script>
+{% endblock %}

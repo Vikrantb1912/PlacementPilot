@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Company Preparation Guide — PlacementPilot AI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="page-header mb-4">
+    <h4 class="fw-bold"><i class="bi bi-buildings text-primary me-2"></i>Company Preparation Guide</h4>
+    <p class="text-muted">Company-specific interview strategies, culture, rounds, and targeted preparation tips.</p>
+  </div>
+
+  <!-- Company Grid -->
+  <div class="row g-3 mb-4">
+    {% for company, info in companies.items() %}
+    <div class="col-sm-6 col-lg-4 col-xl-3">
+      <div class="company-guide-card" onclick="loadCompany('{{ company }}', this)">
+        <div class="company-logo-placeholder">
+          {{ company[0].upper() }}{{ company[1].lower() if company|length > 1 else '' }}
+        </div>
+        <div class="company-card-name">{{ company }}</div>
+        <div class="company-card-focus small text-muted text-truncate" title="{{ info.focus }}">
+          {{ info.focus[:50] }}...
+        </div>
+        <div class="mt-auto pt-2">
+          <span class="badge bg-primary-subtle text-primary small">View Guide</span>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Detailed View -->
+  <div class="pp-card" id="companyDetailCard" style="display:none">
+    <div class="pp-card-header d-flex justify-content-between align-items-center" id="companyDetailHeader">
+      <span id="companyDetailTitle"><i class="bi bi-building"></i> Company Details</span>
+      <button class="btn btn-xs btn-outline-secondary" onclick="generateCompanyGuide()">
+        <i class="bi bi-cpu"></i> AI Deep-Dive
+      </button>
+    </div>
+    <div class="pp-card-body">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="company-stat-card">
+            <div class="stat-label"><i class="bi bi-target me-1 text-primary"></i>Focus Areas</div>
+            <div class="stat-value" id="companyFocus">—</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="company-stat-card">
+            <div class="stat-label"><i class="bi bi-diagram-2 me-1 text-success"></i>Interview Rounds</div>
+            <div class="stat-value" id="companyRounds">—</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="company-stat-card">
+            <div class="stat-label"><i class="bi bi-lightbulb me-1 text-warning"></i>Pro Tips</div>
+            <div class="stat-value" id="companyTips">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4" id="aiCompanyResult" style="display:none">
+        <h6 class="fw-semibold mb-3"><i class="bi bi-stars text-warning"></i> AI Preparation Guide</h6>
+        <div id="companyAIContent" class="ai-result-content"></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const companyData = {{ companies | tojson }};
+let selectedCompany = null;
+
+function loadCompany(name, el) {
+  selectedCompany = name;
+  document.querySelectorAll(".company-guide-card").forEach(c => c.classList.remove("selected"));
+  el.classList.add("selected");
+  const info = companyData[name];
+  document.getElementById("companyDetailCard").style.display = "block";
+  document.getElementById("companyDetailTitle").innerHTML = `<i class="bi bi-building"></i> ${name} — Preparation Guide`;
+  document.getElementById("companyFocus").textContent = info.focus;
+  document.getElementById("companyRounds").textContent = info.rounds;
+  document.getElementById("companyTips").textContent = info.tips;
+  document.getElementById("aiCompanyResult").style.display = "none";
+  document.getElementById("companyDetailCard").scrollIntoView({ behavior: "smooth" });
+}
+
+async function generateCompanyGuide() {
+  if (!selectedCompany) { alert("Please select a company first."); return; }
+  document.getElementById("aiCompanyResult").style.display = "block";
+  showAILoading("companyAIContent", `Generating personalized guide for ${selectedCompany}...`);
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        message: `Give me a comprehensive preparation guide for ${selectedCompany} interviews. Include: specific topics to study, typical question patterns, coding round preparation, culture fit tips, and a 4-week preparation plan.`,
+        module: "company"
+      })
+    });
+    const data = await res.json();
+    renderMarkdown("companyAIContent", data.response || data.error);
+  } catch(e) { renderMarkdown("companyAIContent", "Error generating guide."); }
+}
+</script>
+{% endblock %}

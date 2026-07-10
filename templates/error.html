@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Error {{ code }} — PlacementPilot AI{% endblock %}
+
+{% block content %}
+<div class="container d-flex align-items-center justify-content-center" style="min-height:70vh">
+  <div class="text-center">
+    <div class="error-code">{{ code }}</div>
+    <h3 class="fw-bold mt-2 mb-3">{{ message }}</h3>
+    <p class="text-muted mb-4">
+      {% if code == 404 %}The page you're looking for doesn't exist.
+      {% else %}Something went wrong on our end. Please try again.{% endif %}
+    </p>
+    <div class="d-flex gap-3 justify-content-center">
+      <a href="{{ url_for('index') }}" class="btn pp-btn-primary">
+        <i class="bi bi-house-fill"></i> Go Home
+      </a>
+      <a href="javascript:history.back()" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Go Back
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

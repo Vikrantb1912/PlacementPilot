@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — {{ profile.name }} · PlacementPilot AI{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-lg-4 py-4">
+
+  <!-- ── Header ──────────────────────────────────────────── -->
+  <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3">
+    <div>
+      <h4 class="mb-0 fw-bold">
+        <i class="bi bi-speedometer2 text-primary me-2"></i>
+        Welcome back, {{ profile.name }}!
+      </h4>
+      <small class="text-muted">{{ profile.branch }} · {{ profile.year }} · {{ profile.skill_level }} Level</small>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('chat_page') }}" class="btn pp-btn-primary btn-sm">
+        <i class="bi bi-chat-dots"></i> Ask AI
+      </a>
+      <a href="{{ url_for('setup') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-pencil"></i> Edit Profile
+      </a>
+    </div>
+  </div>
+
+  <!-- ── KPI Cards ──────────────────────────────────────── -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="kpi-card kpi-primary">
+        <div class="kpi-icon"><i class="bi bi-graph-up-arrow"></i></div>
+        <div class="kpi-value">{{ stats.readiness_score }}%</div>
+        <div class="kpi-label">Placement Readiness</div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" style="width:{{ stats.readiness_score }}%"></div></div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="kpi-card kpi-success">
+        <div class="kpi-icon"><i class="bi bi-patch-question-fill"></i></div>
+        <div class="kpi-value">{{ stats.interview_readiness }}%</div>
+        <div class="kpi-label">Interview Readiness</div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" style="width:{{ stats.interview_readiness }}%"></div></div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="kpi-card kpi-warning">
+        <div class="kpi-icon"><i class="bi bi-trophy-fill"></i></div>
+        <div class="kpi-value">{{ stats.strengths|length }}</div>
+        <div class="kpi-label">Strong Areas</div>
+        <div class="kpi-sub">
+          {% for s in stats.strengths[:2] %}<span class="mini-badge">{{ s }}</span>{% endfor %}
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="kpi-card kpi-danger">
+        <div class="kpi-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+        <div class="kpi-value">{{ stats.weaknesses|length }}</div>
+        <div class="kpi-label">Areas to Improve</div>
+        <div class="kpi-sub">
+          {% for w in stats.weaknesses[:2] %}<span class="mini-badge danger">{{ w }}</span>{% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- ── Radar Chart ────────────────────────────────────── -->
+    <div class="col-lg-5">
+      <div class="pp-card h-100">
+        <div class="pp-card-header">
+          <i class="bi bi-diagram-3"></i> Skill Radar
+        </div>
+        <div class="pp-card-body d-flex justify-content-center align-items-center" style="min-height:280px">
+          <canvas id="radarChart" style="max-height:260px"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Progress Bars ─────────────────────────────────── -->
+    <div class="col-lg-7">
+      <div class="pp-card h-100">
+        <div class="pp-card-header d-flex justify-content-between align-items-center">
+          <span><i class="bi bi-bar-chart-line"></i> Module Progress</span>
+          <button class="btn btn-xs btn-outline-primary" id="editProgressBtn">
+            <i class="bi bi-pencil"></i> Update
+          </button>
+        </div>
+        <div class="pp-card-body">
+          {% for section, label in stats.section_labels.items() %}
+          <div class="progress-item mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <small class="fw-semibold">{{ label }}</small>
+              <small class="text-muted progress-pct" id="pct-{{ section }}">{{ stats.section_progress[section] }}%</small>
+            </div>
+            <div class="progress pp-progress">
+              <div class="progress-bar pp-progress-bar"
+                   id="bar-{{ section }}"
+                   role="progressbar"
+                   style="width:{{ stats.section_progress[section] }}%"
+                   data-section="{{ section }}"
+                   data-value="{{ stats.section_progress[section] }}">
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Next Steps ─────────────────────────────────────── -->
+    <div class="col-lg-6">
+      <div class="pp-card h-100">
+        <div class="pp-card-header"><i class="bi bi-arrow-right-circle"></i> Recommended Next Steps</div>
+        <div class="pp-card-body">
+          {% for step in stats.next_steps %}
+          <div class="next-step-item">
+            <div class="step-dot"></div>
+            <div class="step-text">{{ step }}</div>
+          </div>
+          {% endfor %}
+          <div class="mt-3">
+            <a href="{{ url_for('chat_page') }}" class="btn pp-btn-primary btn-sm w-100">
+              <i class="bi bi-chat-dots"></i> Ask AI for Detailed Plan
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Target Companies ──────────────────────────────── -->
+    <div class="col-lg-6">
+      <div class="pp-card h-100">
+        <div class="pp-card-header"><i class="bi bi-buildings"></i> Target Companies</div>
+        <div class="pp-card-body">
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            {% for company in profile.target_companies %}
+            <a href="{{ url_for('company_guide') }}" class="company-tag">
+              <i class="bi bi-building"></i> {{ company }}
+            </a>
+            {% endfor %}
+          </div>
+          <a href="{{ url_for('company_guide') }}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-arrow-right"></i> View Company Guide
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Quick Actions ─────────────────────────────────── -->
+    <div class="col-12">
+      <div class="pp-card">
+        <div class="pp-card-header"><i class="bi bi-lightning-charge-fill"></i> Quick Actions</div>
+        <div class="pp-card-body">
+          <div class="row g-2">
+            {% set actions = [
+              ("roadmap","bi-map","Generate Roadmap","gradient-blue"),
+              ("interview","bi-patch-question","Mock Interview","gradient-purple"),
+              ("resume","bi-file-earmark-person","Resume Review","gradient-orange"),
+              ("aptitude","bi-calculator","Aptitude Quiz","gradient-teal"),
+              ("projects","bi-code-square","Project Ideas","gradient-pink"),
+              ("company_guide","bi-buildings","Company Guide","gradient-indigo"),
+            ] %}
+            {% for endpoint, icon, label, gradient in actions %}
+            <div class="col-6 col-md-4 col-lg-2">
+              <a href="{{ url_for(endpoint) }}" class="quick-action-btn {{ gradient }}">
+                <i class="bi {{ icon }}"></i>
+                <span>{{ label }}</span>
+              </a>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Bar Chart ─────────────────────────────────────── -->
+    <div class="col-12">
+      <div class="pp-card">
+        <div class="pp-card-header"><i class="bi bi-bar-chart"></i> Preparation Overview</div>
+        <div class="pp-card-body" style="height:220px">
+          <canvas id="barChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Progress Edit Modal -->
+<div class="modal fade" id="progressModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content pp-modal">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-pencil-square"></i> Update Your Progress</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted small mb-3">Drag sliders to reflect your current preparation level (0–100%)</p>
+        {% for section, label in stats.section_labels.items() %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold small">{{ label }}
+            <span class="text-primary" id="modal-pct-{{ section }}">{{ stats.section_progress[section] }}%</span>
+          </label>
+          <input type="range" class="form-range progress-slider" min="0" max="100"
+                 value="{{ stats.section_progress[section] }}"
+                 data-section="{{ section }}"
+                 id="slider-{{ section }}" />
+        </div>
+        {% endfor %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn pp-btn-primary" id="saveProgressBtn">
+          <i class="bi bi-save"></i> Save Progress
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// ── Radar Chart ──────────────────────────────────────────────
+const labels = {{ stats.section_labels.values()|list|tojson }};
+const values = {{ stats.section_progress.values()|list|tojson }};
+const isDark = document.documentElement.getAttribute("data-bs-theme") === "dark";
+const gridColor = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.07)";
+const textColor = isDark ? "#ccc" : "#555";
+
+const radarCtx = document.getElementById("radarChart");
+const radarChart = new Chart(radarCtx, {
+  type: "radar",
+  data: {
+    labels: labels,
+    datasets: [{
+      label: "Your Progress",
+      data: values,
+      backgroundColor: "rgba(59,130,212,0.2)",
+      borderColor: "#3b82d4",
+      borderWidth: 2,
+      pointBackgroundColor: "#3b82d4",
+      pointRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    scales: {
+      r: {
+        min: 0, max: 100,
+        ticks: { stepSize: 25, color: textColor, backdropColor: "transparent" },
+        grid: { color: gridColor },
+        angleLines: { color: gridColor },
+        pointLabels: { color: textColor, font: { size: 11 } }
+      }
+    },
+    plugins: { legend: { display: false } }
+  }
+});
+
+// ── Bar Chart ────────────────────────────────────────────────
+const barCtx = document.getElementById("barChart");
+const barColors = ["#3b82d4","#7c5cd8","#10b981","#f59e0b","#ef4444","#06b6d4","#ec4899","#84cc16"];
+new Chart(barCtx, {
+  type: "bar",
+  data: {
+    labels: labels,
+    datasets: [{
+      label: "Progress %",
+      data: values,
+      backgroundColor: barColors,
+      borderRadius: 8,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { min: 0, max: 100, ticks: { color: textColor }, grid: { color: gridColor } },
+      x: { ticks: { color: textColor, maxRotation: 30 }, grid: { display: false } }
+    }
+  }
+});
+
+// ── Progress Edit Modal ──────────────────────────────────────
+document.getElementById("editProgressBtn").addEventListener("click", () => {
+  const modal = new bootstrap.Modal(document.getElementById("progressModal"));
+  modal.show();
+});
+
+document.querySelectorAll(".progress-slider").forEach(slider => {
+  slider.addEventListener("input", function() {
+    document.getElementById(`modal-pct-${this.dataset.section}`).textContent = this.value + "%";
+  });
+});
+
+document.getElementById("saveProgressBtn").addEventListener("click", async () => {
+  const sliders = document.querySelectorAll(".progress-slider");
+  let updated = {};
+  sliders.forEach(s => { updated[s.dataset.section] = parseInt(s.value); });
+
+  for (const [section, value] of Object.entries(updated)) {
+    await fetch("/api/update-progress", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ section, value })
+    });
+    document.getElementById(`bar-${section}`).style.width = value + "%";
+    document.getElementById(`pct-${section}`).textContent = value + "%";
+  }
+
+  bootstrap.Modal.getInstance(document.getElementById("progressModal")).hide();
+  location.reload();
+});
+</script>
+{% endblock %}
