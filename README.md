@@ -1,11 +1,11 @@
-# PlacementPilot AI 🎓
+# PlacementPilot AI 
 
 > **AI-Powered Campus Placement Preparation Platform**  
 > Built with **Python Flask** · **IBM watsonx.ai** · **IBM Granite Models** · **Bootstrap 5**
 
 ---
 
-## 📋 Table of Contents
+##  Table of Contents
 
 - [Overview](#overview)
 - [Features](#features)
@@ -31,18 +31,18 @@
 
 | Module | Description |
 |--------|-------------|
-| 🎯 **Student Profile Management** | Multi-profile support with branch, year, skill level, target companies |
-| 📊 **Placement Dashboard** | Readiness score, radar chart, progress bars, strengths & weaknesses |
-| 🗺️ **Personalized Roadmap** | AI week-by-week plan based on profile and timeline |
-| 📄 **Resume Analyzer** | ATS score, action verbs, quantification tips, improvement suggestions |
-| ❓ **Mock Interview** | Technical, System Design, HR, Aptitude rounds with ideal answers |
-| 🧮 **Aptitude Practice** | Quantitative, logical, verbal questions with step-by-step solutions |
-| 🏢 **Company Guide** | Company-specific interview strategies for 10+ major companies |
-| 💻 **Project Ideas** | Curated project recommendations with tech stack and resume impact |
-| 🏆 **Certifications** | Recommended certs (IBM, AWS, Google, Microsoft) by career goal |
-| 🌐 **AI Chat** | 24/7 context-aware chat with IBM Granite across all modules |
-| 👤 **HR Preparation** | STAR framework stories, behavioral questions, culture fit tips |
-| 📈 **Progress Tracking** | Track completion across all 8 preparation areas |
+|  **Student Profile Management** | Multi-profile support with branch, year, skill level, target companies |
+|  **Placement Dashboard** | Readiness score, radar chart, progress bars, strengths & weaknesses |
+|  **Personalized Roadmap** | AI week-by-week plan based on profile and timeline |
+|  **Resume Analyzer** | ATS score, action verbs, quantification tips, improvement suggestions |
+|  **Mock Interview** | Technical, System Design, HR, Aptitude rounds with ideal answers |
+|  **Aptitude Practice** | Quantitative, logical, verbal questions with step-by-step solutions |
+|  **Company Guide** | Company-specific interview strategies for 10+ major companies |
+|  **Project Ideas** | Curated project recommendations with tech stack and resume impact |
+|  **Certifications** | Recommended certs (IBM, AWS, Google, Microsoft) by career goal |
+|  **AI Chat** | 24/7 context-aware chat with IBM Granite across all modules |
+|  **HR Preparation** | STAR framework stories, behavioral questions, culture fit tips |
+|  **Progress Tracking** | Track completion across all 8 preparation areas |
 
 ---
 
@@ -79,7 +79,7 @@
 ```
 PlacementPilot/
 ├── app.py                        # Flask application entry point
-├── agent_instructions.py         # ⭐ AI agent customization hub
+├── agent_instructions.py         #  AI agent customization hub
 ├── requirements.txt              # Python dependencies
 ├── .env.example                  # Environment variable template
 ├── .env                          # Your local secrets (never commit!)
@@ -418,7 +418,7 @@ kubectl apply -f k8s/service.yaml
 - ✅ AI safety rules in `agent_instructions.py`
 - ✅ No user passwords stored (profile-only system)
 - ✅ `.env` included in `.gitignore`
-- ⚠️ Add HTTPS in production (IBM Cloud handles this automatically)
+-  Add HTTPS in production (IBM Cloud handles this automatically)
 
 ---
 
